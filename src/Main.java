@@ -187,6 +187,7 @@ public class Main {
 
     // 5. Display All Items
     private static void displayAllItems(InventoryManager manager) {
+        System.out.println("\nAll Items in Inventory:\n");
         List<Item> items = manager.getAllItems();
         Utils.printItemsTable(items, true);
     }
@@ -208,11 +209,46 @@ public class Main {
 
     // 7. Sort Items
     private static void sortItems(Scanner scanner, InventoryManager manager) {
-        String sortBy = Utils.readChoiceFromOptions(scanner, "Sort by Quantity or Price? ", "Quantity", "Price");
-        String order = Utils.readChoiceFromOptions(scanner, "Ascending or Descending? ", "Ascending", "Descending");
-        boolean ascending = order.equalsIgnoreCase("Ascending");
+        // Check first if there are any items in the inventory
+        if (manager.getAllItems().isEmpty()) {
+            System.out.println("No items available in the inventory.");
+            return;
+        }
+
+        System.out.println("Sort Options:");
+        System.out.println("1 - Sort by Quantity (Ascending)");
+        System.out.println("2 - Sort by Quantity (Descending)");
+        System.out.println("3 - Sort by Price (Ascending)");
+        System.out.println("4 - Sort by Price (Descending)");
+        System.out.println("5 - Back to Main Menu");
+        int choice = Utils.readMenuChoice(scanner, "Enter choice: ", 1, 5);
+
+        String sortBy;
+        boolean ascending;
+
+        switch (choice) {
+            case 1:
+                sortBy = "quantity";
+                ascending = true;
+                break;
+            case 2:
+                sortBy = "quantity";
+                ascending = false;
+                break;
+            case 3:
+                sortBy = "price";
+                ascending = true;
+                break;
+            case 4:
+                sortBy = "price";
+                ascending = false;
+                break;
+            default:
+                return; // 5 - Back to Main Menu
+        }
 
         List<Item> items = manager.getSortedItems(sortBy, ascending);
+        System.out.println("\nItems sorted by " + sortBy + " (" + (ascending ? "Ascending" : "Descending") + "):\n");
         Utils.printItemsTable(items, true);
     }
 
