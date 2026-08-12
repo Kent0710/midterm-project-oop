@@ -79,16 +79,9 @@ public class Main {
 
     // 1. Add Item
     private static void addItem(Scanner scanner, InventoryManager manager) {
-        Category category;
-        while (true) {
-            System.out.println("Categories: Clothing, Electronics, Entertainment");
-            String categoryInput = Utils.readNonEmptyString(scanner, "Enter Category: ");
-            category = Category.fromString(categoryInput);
-            if (category != null) {
-                break;
-            } else {
-                System.out.println("\nCategory " + categoryInput + " does not exist! Please try again.\n");
-            }
+        Category category = Utils.promptCategoryOrBack(scanner);
+        if (category == null) {
+            return;
         }
 
         String id;
@@ -157,10 +150,8 @@ public class Main {
 
     // 4. Display Items by Category
     private static void displayItemsByCategory(Scanner scanner, InventoryManager manager) {
-        String categoryInput = Utils.readNonEmptyString(scanner, "Enter Category: ");
-        Category category = Category.fromString(categoryInput);
+        Category category = Utils.promptCategoryOrBack(scanner);
         if (category == null) {
-            System.out.println("Category " + categoryInput + " does not exist!");
             return;
         }
         List<Item> items = manager.getItemsByCategory(category);

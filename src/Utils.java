@@ -82,8 +82,7 @@ public class Utils {
                 if (value < 0) {
                     System.out.println("Value cannot be negative. Please try again.");
                     continue;
-                } 
-                else if (value > 1000000000) {
+                } else if (value > 1000000000) {
                     System.out.println("Value cannot be greater than 1 billion. Please try again.");
                     continue;
                 }
@@ -143,6 +142,31 @@ public class Utils {
             for (Item item : items) {
                 System.out.printf(rowFormat, item.getId(), item.getName(), item.getQuantity(), item.getPrice());
             }
+        }
+    }
+
+    /**
+     * Prompts the user to select a category or go back to the main menu. Returns
+     * the selected Category, or null if the user chooses to go back.
+     * Re-prompts on invalid input.
+     */
+    public static Category promptCategoryOrBack(Scanner scanner) {
+        System.out.println("Categories:");
+        System.out.println("1 - Clothing");
+        System.out.println("2 - Electronics");
+        System.out.println("3 - Entertainment");
+        System.out.println("4 - Back to Main Menu");
+        int choice = Utils.readMenuChoice(scanner, "Select Category: ", 1, 4);
+
+        switch (choice) {
+            case 1:
+                return Category.CLOTHING;
+            case 2:
+                return Category.ELECTRONICS;
+            case 3:
+                return Category.ENTERTAINMENT;
+            default:
+                return null; // 4 - Back to Main Menu
         }
     }
 }
