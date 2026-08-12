@@ -170,10 +170,17 @@ public class Main {
 
     // 4. Display Items by Category
     private static void displayItemsByCategory(Scanner scanner, InventoryManager manager) {
+        // Check first if there are any items in the inventory
+        if (manager.getAllItems().isEmpty()) {
+            System.out.println("No items available in the inventory.");
+            return;
+        }
+
         Category category = Utils.promptCategoryOrBack(scanner);
         if (category == null) {
             return;
         }
+        System.out.println("\nItems in Category: " + category.getDisplayName() + "\n");
         List<Item> items = manager.getItemsByCategory(category);
         Utils.printItemsTable(items, false);
     }
