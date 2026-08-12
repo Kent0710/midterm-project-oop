@@ -79,17 +79,21 @@ public class Main {
 
     // 1. Add Item
     private static void addItem(Scanner scanner, InventoryManager manager) {
-        System.out.println("Categories: Clothing, Electronics, Entertainment");
-        String categoryInput = Utils.readNonEmptyString(scanner, "Enter Category: ");
-        Category category = Category.fromString(categoryInput);
-        if (category == null) {
-            System.out.println("Category " + categoryInput + " does not exist!");
-            return;
+        Category category;
+        while (true) {
+            System.out.println("Categories: Clothing, Electronics, Entertainment");
+            String categoryInput = Utils.readNonEmptyString(scanner, "Enter Category: ");
+            category = Category.fromString(categoryInput);
+            if (category != null) {
+                break;
+            } else {
+                System.out.println("\nCategory " + categoryInput + " does not exist! Please try again.\n");
+            }
         }
 
         String id;
         while (true) {
-            id = Utils.readNonEmptyString(scanner, "Enter Item ID: ");
+            id = Utils.readNonEmptyString(scanner, "\nEnter Item ID: ");
             if (manager.idExists(id)) {
                 System.out.println("Item ID " + id + " already exists! Please enter a different ID.");
                 continue;
