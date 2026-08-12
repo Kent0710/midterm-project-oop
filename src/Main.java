@@ -194,6 +194,12 @@ public class Main {
 
     // 6. Search Item
     private static void searchItem(Scanner scanner, InventoryManager manager) {
+        // Check first if there are any items in the inventory
+        if (manager.getAllItems().isEmpty()) {
+            System.out.println("No items available in the inventory.");
+            return;
+        }
+
         String id = Utils.readNonEmptyString(scanner, "Enter Item ID: ");
         Item item = manager.findById(id);
         if (item == null) {
