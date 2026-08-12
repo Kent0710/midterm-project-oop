@@ -26,7 +26,27 @@ public class Utils {
             if (!input.isEmpty()) {
                 return input;
             }
+
             System.out.println("Input cannot be empty. Please try again.");
+        }
+    }
+
+    /**
+     * Reads a line of input and keeps re-prompting until it is non-empty.
+     */
+    public static String readNonEmptyString(Scanner scanner, String prompt, int maxLength, String maxLengthErrorMessage) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim().replaceAll("\\s+", " ");
+            if (!input.isEmpty()) {
+                return input;
+            }
+
+            if (input.length() > maxLength) {
+                System.out.println(maxLengthErrorMessage);
+            } else {
+                System.out.println("Input cannot be empty. Please try again.");
+            }
         }
     }
 
@@ -146,8 +166,8 @@ public class Utils {
     }
 
     /**
-     * Prompts the user to select a category or go back to the main menu. Returns
-     * the selected Category, or null if the user chooses to go back.
+     * Prompts the user to select a category or go back to the main menu.
+     * Returns the selected Category, or null if the user chooses to go back.
      * Re-prompts on invalid input.
      */
     public static Category promptCategoryOrBack(Scanner scanner) {

@@ -86,15 +86,22 @@ public class Main {
 
         String id;
         while (true) {
-            id = Utils.readNonEmptyString(scanner, "\nEnter Item ID: ");
+            // Add a realistic guard of 36 characters following standard UUID length
+            String IDMaxLengthErrorMessage = "ID is too long. Please enter a shorter value (max 36 characters).";
+            id = Utils.readNonEmptyString(scanner, "\nEnter Item ID: ", 36, IDMaxLengthErrorMessage);
             if (manager.idExists(id)) {
                 System.out.println("Item ID " + id + " already exists! Please enter a different ID.");
+                continue;
+            }
+            if (id.length() > 36) {
+                System.out.println("\nID is too long. Please enter a shorter value.");
                 continue;
             }
             break;
         }
 
-        String name = Utils.readNonEmptyString(scanner, "Enter Item Name: ");
+        String nameMaxLengthErrorMessage = "Name is too long. Please enter a shorter value (max 75 characters).";
+        String name = Utils.readNonEmptyString(scanner, "Enter Item Name: ", 75, nameMaxLengthErrorMessage);
         int quantity = Utils.readValidInt(scanner, "Enter Quantity: ");
         double price = Utils.readValidDouble(scanner, "Enter Price: ");
 
