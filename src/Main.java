@@ -105,7 +105,11 @@ public class Main {
 
     // 2. Update Item
     private static void updateItem(Scanner scanner, InventoryManager manager) {
-        String id = Utils.readNonEmptyString(scanner, "Enter Item ID: ");
+        System.out.println("Items in Inventory:\n");
+        // Print all items in a table format for the user to see
+        List<Item> allItems = manager.getAllItems();
+        Utils.printItemsTable(allItems, true);
+        String id = Utils.readNonEmptyString(scanner, "\nEnter Item ID: ");
         Item item = manager.findById(id);
         if (item == null) {
             System.out.println("Item not found!");
