@@ -29,10 +29,14 @@ public enum Category {
             return null;
         }
         String trimmed = input.trim();
-        for (Category category : values()) {
-            if (category.displayName.equalsIgnoreCase(trimmed)) {
-                return category;
-            }
+        if (trimmed.equalsIgnoreCase("Clothing") || trimmed.equals("1")) {
+            return CLOTHING;
+        }
+        if (trimmed.equalsIgnoreCase("Electronics") || trimmed.equals("2")) {
+            return ELECTRONICS;
+        }
+        if (trimmed.equalsIgnoreCase("Entertainment") || trimmed.equals("3")) {
+            return ENTERTAINMENT;
         }
         return null;
     }

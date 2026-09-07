@@ -20,34 +20,42 @@ public class Utils {
      * Reads a line of input and keeps re-prompting until it is non-empty.
      */
     public static String readNonEmptyString(Scanner scanner, String prompt) {
-        while (true) {
+        String input = "";
+        boolean isValid = false;
+        while (!isValid) {
             System.out.print(prompt);
-            String input = scanner.nextLine().trim().replaceAll("\\s+", " ");
+            input = scanner.nextLine().trim().replaceAll("\\s+", " ");
             if (!input.isEmpty()) {
-                return input;
-            }
-
-            System.out.println("Input cannot be empty. Please try again.");
-        }
-    }
-
-    /**
-     * Reads a line of input and keeps re-prompting until it is non-empty.
-     */
-    public static String readNonEmptyString(Scanner scanner, String prompt, int maxLength, String maxLengthErrorMessage) {
-        while (true) {
-            System.out.print(prompt);
-            String input = scanner.nextLine().trim().replaceAll("\\s+", " ");
-            if (!input.isEmpty()) {
-                return input;
-            }
-
-            if (input.length() > maxLength) {
-                System.out.println(maxLengthErrorMessage);
+                isValid = true;
             } else {
                 System.out.println("Input cannot be empty. Please try again.");
             }
         }
+        return input;
+    }
+
+    /**
+     * Reads a line of input and keeps re-prompting until it is non-empty and within the maximum length.
+     */
+    public static String readNonEmptyString(Scanner scanner, String prompt, int maxLength, String maxLengthErrorMessage) {
+        String input = "";
+        boolean isValid = false;
+        while (!isValid) {
+            System.out.print(prompt);
+            input = scanner.nextLine().trim().replaceAll("\\s+", " ");
+            if (input.isEmpty()) {
+                System.out.println("Input cannot be empty. Please try again.");
+                continue;
+            }
+
+            if (input.length() > maxLength) {
+                System.out.println(maxLengthErrorMessage);
+                continue;
+            }
+
+            isValid = true;
+        }
+        return input;
     }
 
     /**
@@ -56,15 +64,22 @@ public class Utils {
      * in validOptions (normalized casing), not what the user typed.
      */
     public static String readChoiceFromOptions(Scanner scanner, String prompt, String... validOptions) {
-        while (true) {
+        String selectedOption = null;
+        boolean isValid = false;
+        while (!isValid) {
             String input = readNonEmptyString(scanner, prompt);
             for (String option : validOptions) {
                 if (option.equalsIgnoreCase(input)) {
-                    return option;
+                    selectedOption = option;
+                    isValid = true;
+                    break;
                 }
             }
-            System.out.println("Invalid input. Please enter one of the following: " + String.join(" / ", validOptions));
+            if (!isValid) {
+                System.out.println("Invalid input. Please enter one of the following: " + String.join(" / ", validOptions));
+            }
         }
+        return selectedOption;
     }
 
     /**
@@ -72,22 +87,28 @@ public class Utils {
      * returns it as an int. Re-prompts on invalid input.
      */
     public static int readValidInt(Scanner scanner, String prompt) {
-        while (true) {
+        int value = 0;
+        boolean isValid = false;
+        while (!isValid) {
             String input = readNonEmptyString(scanner, prompt);
             try {
-                int value = Integer.parseInt(input);
+                value = Integer.parseInt(input);
                 if (value < 0) {
                     System.out.println("Value cannot be negative. Please try again.");
+                    continue;
+                } else if (value > 50000) {
+                    System.out.println("Value cannot be greater than 50,000. Please try again.");
                     continue;
                 } else if (value == 0) {
                     System.out.println("Value cannot be zero. Please try again.");
                     continue;
                 }
-                return value;
+                isValid = true;
             } catch (NumberFormatException e) {
                 System.out.println("Invalid input. Please enter a valid whole number.");
             }
         }
+        return value;
     }
 
     /**
@@ -95,22 +116,25 @@ public class Utils {
      * returns it as a double. Re-prompts on invalid input.
      */
     public static double readValidDouble(Scanner scanner, String prompt) {
-        while (true) {
+        double value = 0.0;
+        boolean isValid = false;
+        while (!isValid) {
             String input = readNonEmptyString(scanner, prompt);
             try {
-                double value = Double.parseDouble(input);
+                value = Double.parseDouble(input);
                 if (value < 0) {
                     System.out.println("Value cannot be negative. Please try again.");
                     continue;
-                } else if (value > 1000000000) {
-                    System.out.println("Value cannot be greater than 1 billion. Please try again.");
+                } else if (value > 1000000) {
+                    System.out.println("Value cannot be greater than 1 million. Please try again.");
                     continue;
                 }
-                return value;
+                isValid = true;
             } catch (NumberFormatException e) {
                 System.out.println("Invalid input. Please enter a valid number.");
             }
         }
+        return value;
     }
 
     /**
@@ -118,23 +142,27 @@ public class Utils {
      * and returns it as an int. Re-prompts on invalid input.
      */
     public static int readMenuChoice(Scanner scanner, String prompt, int min, int max) {
-        while (true) {
+        int value = 0;
+        boolean isValid = false;
+        while (!isValid) {
             String input = readNonEmptyString(scanner, prompt);
             try {
-                int value = Integer.parseInt(input);
+                value = Integer.parseInt(input);
                 if (value < min || value > max) {
                     System.out.println("Please enter a number between " + min + " and " + max + ".");
                     continue;
                 }
-                return value;
+                isValid = true;
             } catch (NumberFormatException e) {
                 System.out.println("Invalid input. Please enter a valid number.");
             }
         }
+        return value;
     }
 
     /**
-     * Prints a list of items in a table format.
+     * Prints a list of items in a table format with dynamic column widths
+     * adapting to the longest value in each column.
      *
      * @param items the items to print
      * @param includeCategory whether to include a Category column
@@ -145,20 +173,42 @@ public class Utils {
             return;
         }
 
+        int idWidth = "ID".length();
+        int nameWidth = "Name".length();
+        int quantityWidth = "Quantity".length();
+        int priceWidth = "Price".length();
+        int categoryWidth = includeCategory ? "Category".length() : 0;
+
+        for (Item item : items) {
+            idWidth = Math.max(idWidth, item.getId().length());
+            nameWidth = Math.max(nameWidth, item.getName().length());
+            quantityWidth = Math.max(quantityWidth, String.valueOf(item.getQuantity()).length());
+            priceWidth = Math.max(priceWidth, String.format("%.2f", item.getPrice()).length());
+            if (includeCategory) {
+                categoryWidth = Math.max(categoryWidth, item.getCategory().getDisplayName().length());
+            }
+        }
+
         if (includeCategory) {
-            String headerFormat = "%-10s %-20s %-10s %-10s %-15s%n";
-            String rowFormat = "%-10s %-20s %-10d %-10.2f %-15s%n";
+            String headerFormat = String.format("%%-%ds    %%-%ds    %%-%ds    %%-%ds    %%-%ds%%n",
+                    idWidth, nameWidth, quantityWidth, priceWidth, categoryWidth);
+            String rowFormat = String.format("%%-%ds    %%-%ds    %%-%dd    %%-%d.2f    %%-%ds%%n",
+                    idWidth, nameWidth, quantityWidth, priceWidth, categoryWidth);
+            int totalWidth = idWidth + nameWidth + quantityWidth + priceWidth + categoryWidth + (4 * 4);
             System.out.printf(headerFormat, "ID", "Name", "Quantity", "Price", "Category");
-            System.out.println("-".repeat(68));
+            System.out.println("-".repeat(totalWidth));
             for (Item item : items) {
                 System.out.printf(rowFormat, item.getId(), item.getName(), item.getQuantity(),
                         item.getPrice(), item.getCategory().getDisplayName());
             }
         } else {
-            String headerFormat = "%-10s %-20s %-10s %-10s%n";
-            String rowFormat = "%-10s %-20s %-10d %-10.2f%n";
+            String headerFormat = String.format("%%-%ds    %%-%ds    %%-%ds    %%-%ds%%n",
+                    idWidth, nameWidth, quantityWidth, priceWidth);
+            String rowFormat = String.format("%%-%ds    %%-%ds    %%-%dd    %%-%d.2f%%n",
+                    idWidth, nameWidth, quantityWidth, priceWidth);
+            int totalWidth = idWidth + nameWidth + quantityWidth + priceWidth + (3 * 4);
             System.out.printf(headerFormat, "ID", "Name", "Quantity", "Price");
-            System.out.println("-".repeat(53));
+            System.out.println("-".repeat(totalWidth));
             for (Item item : items) {
                 System.out.printf(rowFormat, item.getId(), item.getName(), item.getQuantity(), item.getPrice());
             }
@@ -166,27 +216,12 @@ public class Utils {
     }
 
     /**
-     * Prompts the user to select a category or go back to the main menu.
-     * Returns the selected Category, or null if the user chooses to go back.
-     * Re-prompts on invalid input.
+     * Prints the list of supported categories in numbered format.
      */
-    public static Category promptCategoryOrBack(Scanner scanner) {
+    public static void printCategories() {
         System.out.println("Categories:");
         System.out.println("1 - Clothing");
         System.out.println("2 - Electronics");
         System.out.println("3 - Entertainment");
-        System.out.println("4 - Back to Main Menu");
-        int choice = Utils.readMenuChoice(scanner, "Select Category: ", 1, 4);
-
-        switch (choice) {
-            case 1:
-                return Category.CLOTHING;
-            case 2:
-                return Category.ELECTRONICS;
-            case 3:
-                return Category.ENTERTAINMENT;
-            default:
-                return null; // 4 - Back to Main Menu
-        }
     }
 }

@@ -79,25 +79,29 @@ public class Main {
 
     // 1. Add Item
     private static void addItem(Scanner scanner, InventoryManager manager) {
-        Category category = Utils.promptCategoryOrBack(scanner);
+        Utils.printCategories();
+        String categoryInput = Utils.readNonEmptyString(scanner, "Enter Category: ");
+        Category category = Category.fromString(categoryInput);
         if (category == null) {
+            System.out.println("Category " + categoryInput + " does not exist!");
             return;
         }
 
-        String id;
-        while (true) {
+        String id = "";
+        boolean isIdValid = false;
+        while (!isIdValid) {
             // Add a realistic guard of 36 characters following standard UUID length
             String IDMaxLengthErrorMessage = "ID is too long. Please enter a shorter value (max 36 characters).";
-            id = Utils.readNonEmptyString(scanner, "\nEnter Item ID: ", 36, IDMaxLengthErrorMessage);
+            id = Utils.readNonEmptyString(scanner, "Enter Item ID: ", 36, IDMaxLengthErrorMessage);
+            if (id.contains(" ")) {
+                System.out.println("Item ID cannot contain spaces. Please try again.");
+                continue;
+            }
             if (manager.idExists(id)) {
                 System.out.println("Item ID " + id + " already exists! Please enter a different ID.");
                 continue;
             }
-            if (id.length() > 36) {
-                System.out.println("\nID is too long. Please enter a shorter value.");
-                continue;
-            }
-            break;
+            isIdValid = true;
         }
 
         String nameMaxLengthErrorMessage = "Name is too long. Please enter a shorter value (max 75 characters).";
@@ -112,22 +116,21 @@ public class Main {
 
     // 2. Update Item
     private static void updateItem(Scanner scanner, InventoryManager manager) {
-        System.out.println("Items in Inventory:\n");
-
-        // Print all items in a table format for the user to see
         List<Item> allItems = manager.getAllItems();
-        if (allItems.isEmpty()) {
-            System.out.println("No items available to update.");
-            return;
+        if (!allItems.isEmpty()) {
+            System.out.println("Items in Inventory:\n");
+            Utils.printItemsTable(allItems, true);
+            System.out.println();
         }
-        Utils.printItemsTable(allItems, true);
-        String id = Utils.readNonEmptyString(scanner, "\nEnter Item ID: ");
+
+        String id = Utils.readNonEmptyString(scanner, "Enter Item ID: ");
         Item item = manager.findById(id);
         if (item == null) {
             System.out.println("Item not found!");
             return;
         }
 
+        System.out.println("\nUpdate options:");
         System.out.println("1 - Quantity");
         System.out.println("2 - Price");
         System.out.println("3 - Back to Main Menu");
@@ -154,18 +157,14 @@ public class Main {
 
     // 3. Remove Item
     private static void removeItem(Scanner scanner, InventoryManager manager) {
-        System.out.println("Items in Inventory:\n");
-        // Print all items in a table format for the user to see
         List<Item> allItems = manager.getAllItems();
-        if (allItems.isEmpty()) {
-            System.out.println("No items available to remove.");
-            return;
+        if (!allItems.isEmpty()) {
+            System.out.println("Items in Inventory:\n");
+            Utils.printItemsTable(allItems, true);
+            System.out.println();
         }
 
-        Utils.printItemsTable(allItems, true);
-
-        // TODO: Add confirmation prompt before removing the item
-        String id = Utils.readNonEmptyString(scanner, "\nEnter Item ID: ");
+        String id = Utils.readNonEmptyString(scanner, "Enter Item ID: ");
         Item item = manager.findById(id);
         if (item == null) {
             System.out.println("Item not found!");
@@ -177,16 +176,14 @@ public class Main {
 
     // 4. Display Items by Category
     private static void displayItemsByCategory(Scanner scanner, InventoryManager manager) {
-        // Check first if there are any items in the inventory
-        if (manager.getAllItems().isEmpty()) {
-            System.out.println("No items available in the inventory.");
+        Utils.printCategories();
+        String categoryInput = Utils.readNonEmptyString(scanner, "Enter Category: ");
+        Category category = Category.fromString(categoryInput);
+        if (category == null) {
+            System.out.println("Category " + categoryInput + " does not exist!");
             return;
         }
 
-        Category category = Utils.promptCategoryOrBack(scanner);
-        if (category == null) {
-            return;
-        }
         System.out.println("\nItems in Category: " + category.getDisplayName() + "\n");
         List<Item> items = manager.getItemsByCategory(category);
         Utils.printItemsTable(items, false);
@@ -194,19 +191,13 @@ public class Main {
 
     // 5. Display All Items
     private static void displayAllItems(InventoryManager manager) {
-        System.out.println("\nAll Items in Inventory:\n");
+        System.out.println("All Items in Inventory:\n");
         List<Item> items = manager.getAllItems();
         Utils.printItemsTable(items, true);
     }
 
     // 6. Search Item
     private static void searchItem(Scanner scanner, InventoryManager manager) {
-        // Check first if there are any items in the inventory
-        if (manager.getAllItems().isEmpty()) {
-            System.out.println("No items available in the inventory.");
-            return;
-        }
-
         String id = Utils.readNonEmptyString(scanner, "Enter Item ID: ");
         Item item = manager.findById(id);
         if (item == null) {
@@ -222,43 +213,25 @@ public class Main {
 
     // 7. Sort Items
     private static void sortItems(Scanner scanner, InventoryManager manager) {
-        // Check first if there are any items in the inventory
-        if (manager.getAllItems().isEmpty()) {
-            System.out.println("No items available in the inventory.");
+        System.out.println("Sort Criteria:");
+        System.out.println("1 - Quantity");
+        System.out.println("2 - Price");
+        System.out.println("3 - Back to Main Menu");
+        int sortChoice = Utils.readMenuChoice(scanner, "Sort by: ", 1, 3);
+        if (sortChoice == 3) {
             return;
         }
+        String sortBy = (sortChoice == 1) ? "quantity" : "price";
 
-        System.out.println("Sort Options:");
-        System.out.println("1 - Sort by Quantity (Ascending)");
-        System.out.println("2 - Sort by Quantity (Descending)");
-        System.out.println("3 - Sort by Price (Ascending)");
-        System.out.println("4 - Sort by Price (Descending)");
-        System.out.println("5 - Back to Main Menu");
-        int choice = Utils.readMenuChoice(scanner, "Enter choice: ", 1, 5);
-
-        String sortBy;
-        boolean ascending;
-
-        switch (choice) {
-            case 1:
-                sortBy = "quantity";
-                ascending = true;
-                break;
-            case 2:
-                sortBy = "quantity";
-                ascending = false;
-                break;
-            case 3:
-                sortBy = "price";
-                ascending = true;
-                break;
-            case 4:
-                sortBy = "price";
-                ascending = false;
-                break;
-            default:
-                return; // 5 - Back to Main Menu
+        System.out.println("\nSort Order:");
+        System.out.println("1 - Ascending");
+        System.out.println("2 - Descending");
+        System.out.println("3 - Back to Main Menu");
+        int orderChoice = Utils.readMenuChoice(scanner, "Order: ", 1, 3);
+        if (orderChoice == 3) {
+            return;
         }
+        boolean ascending = (orderChoice == 1);
 
         List<Item> items = manager.getSortedItems(sortBy, ascending);
         System.out.println("\nItems sorted by " + sortBy + " (" + (ascending ? "Ascending" : "Descending") + "):\n");
@@ -267,6 +240,7 @@ public class Main {
 
     // 8. Display Low Stock Items
     private static void displayLowStockItems(InventoryManager manager) {
+        System.out.println("Low Stock Items (Quantity <= 5):\n");
         List<Item> items = manager.getLowStockItems();
         Utils.printItemsTable(items, true);
     }
